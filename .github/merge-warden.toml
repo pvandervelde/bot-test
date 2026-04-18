@@ -24,3 +24,150 @@ required = true
 # Define the label that will be applied to the pull request if it does not contain a work item reference.
 # If the label is not specified, no label will be applied.
 label_if_missing = "pr-issue: missing-work-item"
+
+[policies.pullRequests.prSize]
+# Enable PR size checking and labeling
+enabled = true
+
+# Fail the check for oversized PRs (XXL category - 500+ lines)
+fail_on_oversized = false
+
+# File patterns to exclude from size calculations (supports glob patterns)
+excluded_file_patterns = ["*.md", "*.txt", "docs/*"]
+
+# Prefix for size labels (will create labels like "size: XS", "size: S", etc.)
+label_prefix = "size: "
+
+# Add educational comments for oversized PRs
+add_comment = true
+
+# Optional: Custom size thresholds (uncomment to override defaults)
+# [policies.pullRequests.prSize.thresholds]
+# xs = 10    # 1-10 lines
+# s = 50     # 11-50 lines
+# m = 100    # 51-100 lines
+# l = 250    # 101-250 lines
+# xl = 500   # 251-500 lines
+# xxl = 501+ lines (anything above xl)
+
+[policies.pullRequests.wip]
+# Enable WIP (Work In Progress) detection and blocking.
+# When enabled, PRs whose title or description match any WIP pattern will have
+# their merge check set to "failure" until the WIP markers are removed.
+
+# WIP blocking cannot be bypassed by any user — it is always enforced.
+enforce_wip_blocking = true
+
+# Label applied to WIP pull requests. Omit the key (or remove the value) to disable labeling.
+# Empty string is treated the same as omitting the key.
+wip_label = "status: work-in-progress"
+
+# Substrings to search for in the PR TITLE to detect WIP status (case-sensitive).
+# The PR is flagged as WIP if the title contains any of these strings.
+# Note: matching uses str::contains (case-sensitive). Patterns that are substrings of
+# other patterns are redundant — "WIP" already matches titles containing "[WIP]" or "WIP:".
+wip_title_patterns = ["WIP", "wip:", "[wip]", "draft:", "Draft:"]
+
+# Substrings to search for in the PR DESCRIPTION to detect WIP status.
+# Empty by default — WIP detection in the description is opt-in.
+wip_description_patterns = []
+
+# Configuration for propagating issue metadata onto the pull request.
+#
+# Both flags default to false. Teams that do not use GitHub Milestones or
+# Projects v2, or that track issues in an external system, should leave both
+# flags disabled (or omit this section entirely). When both are false, no
+# additional GitHub API calls are made beyond the existing work-item check.
+[policies.pullRequests.issuePropagation]
+# When true, copy the milestone from the first closing-keyword issue reference
+# in the PR body onto the pull request.
+#
+# No-op when the referenced issue has no milestone, or when the PR already has
+# the same milestone. Overwrites an existing PR milestone if it differs from
+# the issue's.
+sync_milestone_from_issue = true
+
+# When true, add the pull request to every Projects v2 project that the
+# referenced issue belongs to.
+#
+# No-op when the referenced issue has no linked projects.
+sync_project_from_issue = true
+
+# PR state lifecycle labels — apply a single label reflecting the current PR
+# state (draft, awaiting review, or approved). Labels are managed idempotently
+# on every PR event: exactly one state label is applied and the other two are
+# removed.
+[policies.pullRequests.prState]
+# Set to true to enable state-lifecycle label management.
+enabled = true
+
+# Label applied when the PR is in draft mode.
+# Remove this key (or set to empty string) to skip labeling for this state.
+draft_label = "status: draft"
+
+# Label applied when the PR is ready for review but not yet approved.
+review_label = "status: in-review"
+
+# Label applied when the PR has at least one approving review.
+approved_label = "status: approved"
+
+# Configuration for smart change type label detection
+[change_type_labels]
+# Enable intelligent change type label detection
+enabled = true
+
+# Mappings from conventional commit types to repository-specific labels
+[change_type_labels.conventional_commit_mappings]
+# Feature-related label mappings (will look for these labels in the repository)
+feat = ["type: enhancement", "type: feature"]
+# Bug fix-related label mappings
+fix = ["type: bug", "type: bugfix", "type: fix"]
+# Documentation-related label mappings
+docs = ["type: documentation", "type: docs"]
+# Style-related label mappings
+style = ["type: style", "type: formatting"]
+# Refactoring-related label mappings
+refactor = ["type: refactor", "type: refactoring", "type: code quality"]
+# Performance-related label mappings
+perf = ["type: performance", "type: optimization"]
+# Test-related label mappings
+test = ["type: test", "type: tests", "type: testing"]
+# Chore-related label mappings
+chore = ["type: chore", "type: maintenance", "type: housekeeping"]
+# CI-related label mappings
+ci = ["type: ci", "type: continuous integration", "type: build"]
+# Build-related label mappings
+build = ["type: build", "type: dependencies"]
+# Revert-related label mappings
+revert = ["type: revert"]
+
+# Settings for creating fallback labels when repository labels are not found
+[change_type_labels.fallback_label_settings]
+# Format for creating new label names (use {change_type} placeholder)
+name_format = "type: {change_type}"
+# Whether to create fallback labels if none are found
+create_if_missing = false
+# Colors for fallback labels (hex format)
+[change_type_labels.fallback_label_settings.color_scheme]
+feat = "#0075ca"     # Blue - features
+fix = "#d73a4a"      # Red - bug fixes
+docs = "#0052cc"     # Dark blue - documentation
+style = "#f9d0c4"    # Light pink - formatting
+refactor = "#fef2c0" # Light yellow - refactoring
+perf = "#a2eeef"     # Light blue - performance
+test = "#d4edda"     # Light green - testing
+chore = "#e1e4e8"    # Light gray - maintenance
+ci = "#fbca04"       # Yellow - CI/CD
+build = "#c5def5"    # Light blue - build system
+revert = "#b60205"   # Dark red - reverts
+
+# Configuration for the label detection strategy
+[change_type_labels.detection_strategy]
+# Enable exact name matching (e.g., "feat", "fix")
+exact_match = true
+# Enable prefix matching (e.g., "type: feat", "kind: fix")
+prefix_match = true
+# Enable description matching (e.g., labels with "(type: feat)" in description)
+description_match = true
+# Common prefixes to check for prefix matching
+common_prefixes = ["type: ", "kind: ", "category: "]
