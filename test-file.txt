@@ -1,0 +1,2 @@
+This file contains some text that I can change whenever I want to test how bots react
+to PR changes.
